@@ -1,0 +1,1738 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<title>Grimório da Sentinela</title>
+<style>
+body{font-family:system-ui;background:#0c0c14;color:#eee;margin:0;padding:20px}
+.container{max-width:1000px;margin:auto}
+h1{color:#d7dbff;text-align:center}
+.section{background:#151524;border-radius:14px;padding:16px;margin-bottom:20px}
+h2{color:#bfc6ff}
+input,textarea{width:100%;padding:8px;border-radius:8px;border:none;background:#23233a;color:#fff;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.spell,.feature{border:1px solid #2f2f44;border-radius:10px;padding:10px;margin-bottom:8px}
+.locked{opacity:.4}
+.domain{border-left:4px solid #9da6ff}
+.prepared{background:#26306a}
+button{background:#9da6ff;color:#000;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;margin-top:6px}
+button:disabled{opacity:.5;cursor:not-allowed}
+.spell-group{margin-bottom:24px}
+.spell-group h3{color:#9da6ff;font-size:1.1em;margin-bottom:12px;border-bottom:2px solid #2f2f44;padding-bottom:6px}
+.tags{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.tag{background:#2f2f44;color:#bfc6ff;padding:2px 8px;border-radius:4px;font-size:0.85em}
+.preparable-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.spell-container{background:#0c0c14;border:2px solid #2f2f44;border-radius:10px;padding:12px;max-height:500px;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#9da6ff #0c0c14}
+.spell-container::-webkit-scrollbar{width:8px}
+.spell-container::-webkit-scrollbar-track{background:#0c0c14;border-radius:4px}
+.spell-container::-webkit-scrollbar-thumb{background:#9da6ff;border-radius:4px}
+.spell-container::-webkit-scrollbar-thumb:hover{background:#bfc6ff}
+.spell-container h4{color:#bfc6ff;font-size:0.95em;margin:0 0 12px 0;text-align:center;position:sticky;top:0;background:#0c0c14;padding-bottom:8px;z-index:1}
+.spell-container.prepared-container{border-color:#9da6ff}
+.spell-count-badge{background:#9da6ff;color:#000;padding:2px 8px;border-radius:4px;font-size:0.85em;font-weight:bold}
+.tabs{display:flex;gap:8px;margin-bottom:20px;border-bottom:2px solid #2f2f44}
+.tab{background:transparent;color:#9da6ff;border:none;padding:12px 24px;cursor:pointer;font-size:1em;border-bottom:3px solid transparent;transition:all 0.3s}
+.tab:hover{background:#1a1a2e;border-bottom-color:#9da6ff}
+.tab.active{color:#d7dbff;border-bottom-color:#9da6ff;font-weight:bold}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.action-spell{background:#1a1a2e;border:1px solid #9da6ff;border-left:4px solid #9da6ff}
+.ritual-spell{border-left:4px solid #d4af37}
+.action-badge{background:#ff6b6b;color:#fff;padding:2px 6px;border-radius:3px;font-size:0.75em}
+.bonus-badge{background:#4ecdc4;color:#000;padding:2px 6px;border-radius:3px;font-size:0.75em}
+.char-image-container{text-align:center;margin-bottom:16px}
+.char-image-preview{width:200px;height:280px;border:2px solid #9da6ff;border-radius:10px;margin:0 auto 12px;background:#0c0c14;object-fit:cover;display:block}
+.char-image-placeholder{width:200px;height:280px;border:2px dashed #2f2f44;border-radius:10px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;color:#666;font-size:0.9em;background:#0c0c14}
+#char-image-input{display:none}
+.upload-button{background:#9da6ff;color:#000;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:0.95em;font-weight:bold;width:100%}
+.upload-button:hover{background:#bfc6ff}
+.timeline{position:relative;padding:20px 0}
+.timeline-item{display:flex;margin-bottom:24px;position:relative}
+.timeline-item::before{content:'';position:absolute;left:40px;top:50px;bottom:-24px;width:2px;background:#2f2f44}
+.timeline-item:last-child::before{display:none}
+.timeline-dot{width:80px;height:80px;background:#151524;border:3px solid #9da6ff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;color:#9da6ff;font-size:1.2em;flex-shrink:0}
+.timeline-item.locked .timeline-dot{background:#0c0c14;border-color:#444;color:#666;opacity:.5}
+.timeline-content{flex:1;margin-left:20px;padding:12px;background:#0c0c14;border-left:3px solid #9da6ff;border-radius:6px}
+.timeline-item.locked .timeline-content{background:#0a0a14;border-left-color:#444;opacity:.5}
+.timeline-content h4{margin:0 0 6px 0;color:#d7dbff}
+.timeline-item.locked .timeline-content h4{color:#666}
+.timeline-content small{color:#aaa;display:block;margin-bottom:6px}
+.timeline-item.locked .timeline-content small{color:#555}
+.ability-type{display:inline-block;padding:2px 6px;border-radius:3px;font-size:0.8em;font-weight:bold;margin-right:6px}
+.type-passiva{background:#4ecdc4;color:#000}
+.type-acao{background:#ff6b6b;color:#fff}
+.type-acao-bonus{background:#ffa500;color:#000}
+.spell-group{position:relative}
+.spell-group-header{display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:8px;background:#1a1a2e;border-radius:8px;margin-bottom:8px}
+.spell-group-header:hover{background:#23233a}
+.spell-group-title{color:#9da6ff;font-size:1.1em;margin:0;flex:1}
+.collapse-icon{color:#9da6ff;font-size:1.2em;transition:transform 0.3s;user-select:none}
+.spell-group.collapsed .collapse-icon{transform:rotate(-90deg)}
+.spell-group-content{max-height:400px;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#9da6ff #0c0c14;transition:max-height 0.3s ease}
+.spell-group.collapsed .spell-group-content{max-height:0;overflow:hidden}
+#section-preparaveis .spell-group-content{max-height:none;overflow:visible}
+.spell-group-content::-webkit-scrollbar{width:8px}
+.spell-group-content::-webkit-scrollbar-track{background:#0c0c14;border-radius:4px}
+.spell-group-content::-webkit-scrollbar-thumb{background:#9da6ff;border-radius:4px}
+.spell-group-content::-webkit-scrollbar-thumb:hover{background:#bfc6ff}
+.image-gallery{display:grid;grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));gap:12px;margin-top:12px}
+.gallery-item{position:relative;width:100%;padding-bottom:140%;border:2px solid #2f2f44;border-radius:8px;overflow:hidden;cursor:pointer;background:#0c0c14}
+.gallery-item img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}
+.gallery-item.main-image{border-color:#d4af37;box-shadow:0 0 12px rgba(212,175,55,0.4)}
+.gallery-item.main-image::after{content:'\2b50 PRINCIPAL';position:absolute;top:4px;left:4px;right:4px;background:rgba(212,175,55,0.95);color:#000;font-size:0.7em;font-weight:bold;padding:4px;text-align:center;border-radius:4px}
+.gallery-item:hover{border-color:#9da6ff}
+.gallery-delete-btn{position:absolute;top:4px;right:4px;background:rgba(255,0,0,0.8);color:#fff;border:none;width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:0.9em;display:flex;align-items:center;justify-content:center;z-index:2}
+.gallery-delete-btn:hover{background:rgba(255,0,0,1)}
+.gallery-add-btn{width:100%;padding-bottom:140%;border:2px dashed #2f2f44;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:#0c0c14;color:#666;font-size:2em;position:relative}
+.gallery-add-btn:hover{border-color:#9da6ff;color:#9da6ff}
+.gallery-add-btn span{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}
+.equipment-paperdoll{display:grid;grid-template-columns:1fr 2fr 1fr;grid-template-rows:repeat(4, auto);gap:16px;padding:20px;background:#0c0c14;border-radius:12px;border:2px solid #2f2f44}
+.equipment-slot{background:#151524;border:2px solid #2f2f44;border-radius:10px;padding:12px;transition:all 0.3s}
+.equipment-slot:hover{border-color:#9da6ff;box-shadow:0 0 12px rgba(157,166,255,0.2)}
+.equipment-slot-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;color:#9da6ff;font-weight:bold;font-size:0.95em}
+.equipment-slot-icon{font-size:1.5em}
+.equipment-slot input[type="text"]{width:100%;padding:6px;background:#0c0c14;border:1px solid #2f2f44;border-radius:6px;color:#fff;margin-bottom:6px;font-size:0.9em}
+.equipment-slot input[type="text"]::placeholder{color:#555}
+.equipment-slot-bonuses{display:flex;gap:8px}
+.equipment-bonus-field{flex:1}
+.equipment-bonus-field label{display:block;font-size:0.75em;color:#aaa;margin-bottom:2px}
+.equipment-bonus-field input{width:100%;padding:4px;background:#0c0c14;border:1px solid #2f2f44;border-radius:4px;color:#d4af37;text-align:center;font-weight:bold;font-size:0.85em}
+.equipment-center{grid-column:2;grid-row:1/5;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(157,166,255,0.05);border:2px dashed #2f2f44;border-radius:12px;padding:20px}
+.equipment-stats{background:#151524;border:2px solid #9da6ff;border-radius:10px;padding:16px;width:100%;max-width:300px}
+.equipment-stat{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:8px;background:#0c0c14;border-radius:6px}
+.equipment-stat:last-child{margin-bottom:0}
+.equipment-stat-label{color:#bfc6ff;font-size:0.9em}
+.equipment-stat-value{color:#d4af37;font-weight:bold;font-size:1.1em}
+.slot-left{grid-column:1}
+.slot-right{grid-column:3}
+.slot-head{grid-row:1}
+.slot-neck{grid-row:2}
+.slot-hands{grid-row:3}
+.slot-feet{grid-row:4}
+.slot-mainhand{grid-row:1}
+.slot-offhand{grid-row:2}
+.slot-ring1{grid-row:3}
+.slot-ring2{grid-row:4}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>🌙 Grimório da Sentinela</h1>
+
+<div class="tabs">
+<button class="tab active" data-tab="personagem" onclick="switchTab('personagem')">👤 Personagem</button>
+<button class="tab" data-tab="campanha" onclick="switchTab('campanha')">📖 Diário da Campanha</button>
+<button class="tab" data-tab="magias" onclick="switchTab('magias')">📖 Magias</button>
+<button class="tab" data-tab="habilidades" onclick="switchTab('habilidades')">🔮 Habilidades</button>
+<button style="margin-left:auto;background:#d4af37;color:#000;border:none;padding:12px 24px;border-radius:6px;cursor:pointer;font-size:1em;font-weight:bold" onclick="openFlipbook()">📚 Abrir História (Flip)</button>
+</div>
+
+<!-- ABA PERSONAGEM -->
+<div id="tab-personagem" class="tab-content active">
+<div class="section">
+<h2>🌙 Vah'Lunara</h2>
+
+<!-- Área de Imagem -->
+<div class="char-image-container">
+<h3 style="color:#9da6ff;margin-bottom:12px">Galeria de Imagens</h3>
+<div id="image-gallery" class="image-gallery">
+  <!-- Imagens serão adicionadas aqui via JS -->
+</div>
+<input type="file" id="char-image-input" accept="image/*" onchange="handleImageUpload(event)" />
+<button class="upload-button" onclick="document.getElementById('char-image-input').click()" style="margin-top:12px">➕ Adicionar Imagem</button>
+<small style="display:block;color:#666;text-align:center;margin-top:8px">Clique em uma imagem para defini-la como principal</small>
+</div>
+
+<div class="grid">
+<div>
+<label>Nome</label><input id="nome" value="Vah'Lunara" onchange="saveCharacterData()" />
+<label>Título</label><input id="titulo" value="Sentinela do Crepúsculo" onchange="saveCharacterData()" />
+<label>Raça</label><input id="raca" value="Firbolg" readonly style="background:#1a1a2e" />
+<label>Classe</label><input id="classe" value="Clériga — Domínio do Crepúsculo" readonly style="background:#1a1a2e" />
+<label>Nível</label><input id="nivel" type="number" value="1" min="1" max="20" onchange="onLevelChange()" />
+</div>
+<div>
+<label>História</label>
+<textarea id="lore" rows="8" onchange="saveCharacterData()">Membro de Thar Selûn, o Povo da Última Luz. Guardiã nômade devota de Selûne, deusa da lua e das estrelas.</textarea>
+</div>
+</div>
+</div>
+
+<div class="section">
+<h2>⚔️ Atributos & Build</h2>
+
+<!-- Atributos -->
+<div style="margin-bottom: 24px;">
+<h3 style="color:#9da6ff;margin-bottom:16px">Atributos (Ability Scores)</h3>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
+  <div style="background:#0c0c14;border:1px solid #2f2f44;border-radius:8px;padding:12px;">
+    <label style="display:block;margin-bottom:6px;font-size:0.9em;color:#9da6ff">Força (STR)</label>
+    <input id="attr_str" type="number" value="10" min="1" max="20" onchange="onAttributeChange()" style="width:100%;padding:8px;margin-bottom:4px" />
+    <small id="mod_str" style="color:#aaa">+0</small>
+  </div>
+  <div style="background:#0c0c14;border:1px solid #2f2f44;border-radius:8px;padding:12px;">
+    <label style="display:block;margin-bottom:6px;font-size:0.9em;color:#9da6ff">Destreza (DEX)</label>
+    <input id="attr_dex" type="number" value="10" min="1" max="20" onchange="onAttributeChange()" style="width:100%;padding:8px;margin-bottom:4px" />
+    <small id="mod_dex" style="color:#aaa">+0</small>
+  </div>
+  <div style="background:#0c0c14;border:1px solid #2f2f44;border-radius:8px;padding:12px;">
+    <label style="display:block;margin-bottom:6px;font-size:0.9em;color:#9da6ff">Constituição (CON)</label>
+    <input id="attr_con" type="number" value="10" min="1" max="20" onchange="onAttributeChange()" style="width:100%;padding:8px;margin-bottom:4px" />
+    <small id="mod_con" style="color:#aaa">+0</small>
+  </div>
+  <div style="background:#0c0c14;border:1px solid #2f2f44;border-radius:8px;padding:12px;">
+    <label style="display:block;margin-bottom:6px;font-size:0.9em;color:#9da6ff">Inteligência (INT)</label>
+    <input id="attr_int" type="number" value="10" min="1" max="20" onchange="onAttributeChange()" style="width:100%;padding:8px;margin-bottom:4px" />
+    <small id="mod_int" style="color:#aaa">+0</small>
+  </div>
+  <div style="background:#0c0c14;border:1px solid #2f2f44;border-radius:8px;padding:12px;">
+    <label style="display:block;margin-bottom:6px;font-size:0.9em;color:#9da6ff">Sabedoria (WIS)</label>
+    <input id="attr_wis" type="number" value="10" min="1" max="20" onchange="onAttributeChange()" style="width:100%;padding:8px;margin-bottom:4px" />
+    <small id="mod_wis" style="color:#aaa">+0</small>
+  </div>
+  <div style="background:#0c0c14;border:1px solid #2f2f44;border-radius:8px;padding:12px;">
+    <label style="display:block;margin-bottom:6px;font-size:0.9em;color:#9da6ff">Carisma (CHA)</label>
+    <input id="attr_cha" type="number" value="10" min="1" max="20" onchange="onAttributeChange()" style="width:100%;padding:8px;margin-bottom:4px" />
+    <small id="mod_cha" style="color:#aaa">+0</small>
+  </div>
+</div>
+</div>
+
+<!-- Equipamento -->
+<div>
+<h3 style="color:#9da6ff;margin-bottom:16px">⚔️ Equipamento</h3>
+<div class="equipment-paperdoll">
+  <!-- Coluna Esquerda -->
+  <div class="equipment-slot slot-left slot-head">
+    <div class="equipment-slot-header">
+      <span class="equipment-slot-icon">👑</span>
+      <span>Cabeça</span>
+    </div>
+    <input type="text" id="eq_head" placeholder="Capacete, Circlet..." onchange="updateEquipmentStats()" />
+    <div class="equipment-slot-bonuses">
+      <div class="equipment-bonus-field">
+        <label>CA</label>
+        <input type="number" id="eq_head_ac" value="0" onchange="updateEquipmentStats()" />
+      </div>
+    </div>
+  </div>
+  
+  <div class="equipment-slot slot-left slot-neck">
+    <div class="equipment-slot-header">
+      <span class="equipment-slot-icon">📿</span>
+      <span>Pescoço</span>
+    </div>
+    <input type="text" id="eq_neck" placeholder="Amuleto, Medalão..." onchange="updateEquipmentStats()" />
+    <div class="equipment-slot-bonuses">
+      <div class="equipment-bonus-field">
+        <label>CA</label>
+        <input type="number" id="eq_neck_ac" value="0" onchange="updateEquipmentStats()" />
+      </div>
+    </div>
+  </div>
+  
+  <div class="equipment-slot slot-left slot-hands">
+    <div class="equipment-slot-header">
+      <span class="equipment-slot-icon">🧤</span>
+      <span>Mãos</span>
+    </div>
+    <input type="text" id="eq_hands" placeholder="Luvas, Manoplas..." onchange="updateEquipmentStats()" />
+    <div class="equipment-slot-bonuses">
+      <div class="equipment-bonus-field">
+        <label>CA</label>
+        <input type="number" id="eq_hands_ac" value="0" onchange="updateEquipmentStats()" />
+      </div>
+    </div>
+  </div>
+  
+  <div class="equipment-slot slot-left slot-feet">
+    <div class="equipment-slot-header">
+      <span class="equipment-slot-icon">👢</span>
+      <span>Pés</span>
+    </div>
+    <input type="text" id="eq_feet" placeholder="Botas..." onchange="updateEquipmentStats()" />
+    <div class="equipment-slot-bonuses">
+      <div class="equipment-bonus-field">
+        <label>CA</label>
+        <input type="number" id="eq_feet_ac" value="0" onchange="updateEquipmentStats()" />
+      </div>
+    </div>
+  </div>
+  
+  <!-- Centro - Stats Calculados -->
+  <div class="equipment-center">
+    <div class="equipment-stats">
+      <h4 style="text-align:center;color:#d7dbff;margin:0 0 16px 0;font-size:1em">🛡️ Stats de Combate</h4>
+      <div class="equipment-stat">
+        <span class="equipment-stat-label">Classe de Armadura</span>
+        <span class="equipment-stat-value" id="total_ac">10</span>
+      </div>
+      <div class="equipment-stat">
+        <span class="equipment-stat-label">Bônus de Ataque</span>
+        <span class="equipment-stat-value" id="total_attack">+0</span>
+      </div>
+      <div class="equipment-stat">
+        <span class="equipment-stat-label">Dano (Mão Principal)</span>
+        <span class="equipment-stat-value" id="total_damage" style="font-size:0.95em">-</span>
+      </div>
+    </div>
+    
+    <div style="margin-top:20px;width:100%;max-width:300px">
+      <label style="display:block;color:#9da6ff;margin-bottom:8px;font-size:0.9em">🎒 Mochila / Outros Itens</label>
+      <textarea id="eq_backpack" rows="4" placeholder="Poções, pergaminhos, itens especiais..." onchange="updateEquipmentStats()" style="width:100%;padding:8px;background:#151524;border:1px solid #2f2f44;border-radius:6px;color:#fff;resize:vertical"></textarea>
+    </div>
+  </div>
+  
+  <!-- Coluna Direita -->
+  <div class="equipment-slot slot-right slot-mainhand">
+    <div class="equipment-slot-header">
+      <span class="equipment-slot-icon">⚔️</span>
+      <span>Mão Principal</span>
+    </div>
+    <input type="text" id="eq_mainhand" placeholder="Arma..." onchange="updateEquipmentStats()" />
+    <div class="equipment-slot-bonuses">
+      <div class="equipment-bonus-field">
+        <label>ATQ</label>
+        <input type="number" id="eq_mainhand_atk" value="0" onchange="updateEquipmentStats()" />
+      </div>
+      <div class="equipment-bonus-field">
+        <label>Dano</label>
+        <input type="text" id="eq_mainhand_dmg" placeholder="1d8" onchange="updateEquipmentStats()" style="text-align:left" />
+      </div>
+    </div>
+  </div>
+  
+  <div class="equipment-slot slot-right slot-offhand">
+    <div class="equipment-slot-header">
+      <span class="equipment-slot-icon">🛡️</span>
+      <span>Mão Secundária</span>
+    </div>
+    <input type="text" id="eq_offhand" placeholder="Escudo, Arma..." onchange="updateEquipmentStats()" />
+    <div class="equipment-slot-bonuses">
+      <div class="equipment-bonus-field">
+        <label>CA</label>
+        <input type="number" id="eq_offhand_ac" value="0" onchange="updateEquipmentStats()" />
+      </div>
+      <div class="equipment-bonus-field">
+        <label>ATQ</label>
+        <input type="number" id="eq_offhand_atk" value="0" onchange="updateEquipmentStats()" />
+      </div>
+    </div>
+  </div>
+  
+  <div class="equipment-slot slot-right slot-ring1">
+    <div class="equipment-slot-header">
+      <span class="equipment-slot-icon">💍</span>
+      <span>Anel 1</span>
+    </div>
+    <input type="text" id="eq_ring1" placeholder="Anel..." onchange="updateEquipmentStats()" />
+    <div class="equipment-slot-bonuses">
+      <div class="equipment-bonus-field">
+        <label>CA</label>
+        <input type="number" id="eq_ring1_ac" value="0" onchange="updateEquipmentStats()" />
+      </div>
+    </div>
+  </div>
+  
+  <div class="equipment-slot slot-right slot-ring2">
+    <div class="equipment-slot-header">
+      <span class="equipment-slot-icon">💍</span>
+      <span>Anel 2</span>
+    </div>
+    <input type="text" id="eq_ring2" placeholder="Anel..." onchange="updateEquipmentStats()" />
+    <div class="equipment-slot-bonuses">
+      <div class="equipment-bonus-field">
+        <label>CA</label>
+        <input type="number" id="eq_ring2_ac" value="0" onchange="updateEquipmentStats()" />
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Armadura e Capa em linha separada -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">
+  <div class="equipment-slot">
+    <div class="equipment-slot-header">
+      <span class="equipment-slot-icon">🛡️</span>
+      <span>Armadura</span>
+    </div>
+    <input type="text" id="eq_armor" placeholder="Armadura de Couro, Cota de Malha..." onchange="updateEquipmentStats()" />
+    <div class="equipment-slot-bonuses">
+      <div class="equipment-bonus-field">
+        <label>CA Base</label>
+        <input type="number" id="eq_armor_ac" value="10" onchange="updateEquipmentStats()" />
+      </div>
+      <div class="equipment-bonus-field">
+        <label>Max DEX</label>
+        <input type="number" id="eq_armor_maxdex" value="99" placeholder="99" onchange="updateEquipmentStats()" />
+      </div>
+    </div>
+  </div>
+  
+  <div class="equipment-slot">
+    <div class="equipment-slot-header">
+      <span class="equipment-slot-icon">🧥</span>
+      <span>Capa / Cintura</span>
+    </div>
+    <input type="text" id="eq_cloak" placeholder="Capa, Cinto..." onchange="updateEquipmentStats()" />
+    <div class="equipment-slot-bonuses">
+      <div class="equipment-bonus-field">
+        <label>CA</label>
+        <input type="number" id="eq_cloak_ac" value="0" onchange="updateEquipmentStats()" />
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="section">
+<h2>📊 Resumo de Recursos</h2>
+<div class="grid">
+<div>
+<p><strong>Slots de Magia Nível 1:</strong> 2 / 2</p>
+<p><strong>Magias Preparadas:</strong> <span id="quick-spell-count">0 / 4</span></p>
+<p><strong>Magias de Domínio:</strong> 2 (sempre preparadas)</p>
+</div>
+<div>
+<p><strong>Recursos Raciais:</strong></p>
+<p>• Passos Invisíveis: 1 / 1 (por descanso)</p>
+<p><strong>Recursos de Classe:</strong></p>
+<p>• Nenhum desbloqueado no nível 1</p>
+</div>
+</div>
+</div>
+
+<div class="section">
+<h2>🗒️ Diário de Jogo</h2>
+<div class="grid">
+  <div>
+    <button onclick="saveCharacterData()">Salvar agora</button>
+    <button onclick="exportCharacterSheet()">Exportar JSON</button>
+    <button onclick="triggerImport()">Importar JSON</button>
+    <input type="file" id="import-json-input" accept="application/json" style="display:none" onchange="importCharacterSheet(event)" />
+    <button onclick="clearCharacterSheet()" style="margin-left:8px">Limpar diário</button>
+  </div>
+</div>
+<p style="color:#aaa;font-size:0.9em">Persistência: nome, título, nível, lore, magias preparadas e imagem.</p>
+</div>
+</div>
+</div>
+
+<!-- ABA DIÁRIO DA CAMPANHA -->
+<div id="tab-campanha" class="tab-content">
+<div class="section">
+<h2>📖 Diário da Campanha</h2>
+
+<!-- Card de resumo compacto -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+  <!-- Coluna esquerda: Avatar e Info -->
+  <div style="text-align: center;">
+    <div id="campanha-char-image-wrapper" class="char-image-placeholder" style="width:120px;height:120px;margin:0 auto;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:3em">👤</div>
+    <h3 style="margin: 12px 0 4px; font-size: 1.3em" id="campanha-nome">Vah'Lunara</h3>
+    <p style="margin: 0; color: #9da6ff; font-size: 0.9em">
+      <strong>Nível</strong> <span id="campanha-nivel">1</span>
+      &nbsp;&nbsp;|&nbsp;&nbsp;
+      <strong>PV</strong> <span id="campanha-hp">8</span> / 8
+    </p>
+  </div>
+
+  <!-- Coluna direita: Recursos rápidos -->
+  <div>
+    <h4 style="margin-top: 0">Recursos & Preparação</h4>
+    <p style="margin: 8px 0;">
+      <strong>Magias Preparadas:</strong> <span id="campanha-prepared-count">0</span> / <span id="campanha-prepared-max">4</span>
+    </p>
+    <p style="margin: 8px 0;">
+      <strong>Rituais Disponíveis:</strong> <span id="campanha-rituals-count">0</span>
+    </p>
+    <p style="margin: 8px 0;">
+      <strong>Recursos Raciais:</strong> 1/1 (Passos Invisíveis)
+    </p>
+    <p style="margin: 8px 0;">
+      <strong>Canalização Divina:</strong> 1 + Prof (por descanso)
+    </p>
+  </div>
+</div>
+
+<!-- Magias Preparadas de Hoje -->
+<div class="spell-group">
+  <h3>✨ Magias Preparadas de Hoje</h3>
+  <div id="campanha-prepared-spells" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
+    <p style="color: #666; grid-column: 1/-1;">Nenhuma magia preparada</p>
+  </div>
+</div>
+
+<!-- Rituais Disponíveis -->
+<div class="spell-group">
+  <h3>🕯️ Rituais (Não Usam Slot)</h3>
+  <div id="campanha-rituals" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
+    <p style="color: #666; grid-column: 1/-1;">Nenhum ritual disponível</p>
+  </div>
+</div>
+
+<!-- Truques Disponíveis -->
+<div class="spell-group">
+  <h3>🟣 Truques (Sem Limite de Uso)</h3>
+  <div id="campanha-cantrips" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
+    <p style="color: #666; grid-column: 1/-1;">Nenhum truque disponível</p>
+  </div>
+</div>
+
+<!-- Habilidades Raciais -->
+<div class="spell-group">
+  <h3>🌳 Habilidades Raciais — Firbolg</h3>
+  <div id="campanha-racial-abilities" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
+    <!-- Será preenchido por JavaScript -->
+  </div>
+</div>
+
+<!-- Botões de Gerenciamento -->
+<div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #444;">
+  <h4>Diário de Jogo</h4>
+  <button onclick="saveCharacterData()" style="margin-right: 8px;">💾 Salvar agora</button>
+  <button onclick="exportCharacterSheet()" style="margin-right: 8px;">📥 Exportar JSON</button>
+  <button onclick="triggerImport()" style="margin-right: 8px;">📤 Importar JSON</button>
+  <button onclick="clearCharacterSheet()" style="margin-left: 8px; color: #ff6b6b;">🗑️ Limpar diário</button>
+</div>
+</div>
+</div>
+
+<!-- ABA AÇÕES (oculta - apenas banco de dados para o Diário) -->
+<div id="tab-acoes" class="tab-content" style="display: none;">
+<div class="section">
+<h2>⚔️ Ações Disponíveis</h2>
+<p style="color:#aaa;font-size:0.9em">O que você pode usar AGORA no seu turno</p>
+<div id="actions-container"></div>
+</div>
+</div>
+
+<!-- ABA MAGIAS -->
+<div id="tab-magias" class="tab-content">
+<div class="section">
+<h2>📖 Grimório Completo</h2>
+<p id="spell-count"><strong>Preparadas:</strong> 0 / 0</p>
+<div id="spells-container"></div>
+</div>
+</div>
+
+<!-- ABA HABILIDADES -->
+<div id="tab-habilidades" class="tab-content">
+<div class="section">
+<h2>🌳 Habilidades Raciais — Firbolg</h2>
+<div class="spell-group">
+<div class="feature"><strong>Passiva</strong> — Força Oculta<br/><small style="color:#aaa">Você conta como um tamanho maior ao determinar capacidade de carga e peso que pode empurrar/arrastar/erguer.</small></div>
+<div class="feature"><strong>Passiva</strong> — Fala das Feras e Folhas<br/><small style="color:#aaa">Você pode comunicar ideias simples com bestas e plantas. Elas podem entender suas palavras, mas você não tem habilidade especial para entendê-las.</small></div>
+<div class="feature"><strong>Ativa</strong> — Passos Invisíveis (1x por descanso)<br/><small style="color:#aaa">Ação bônus. Você magicamente fica invisível até o início do seu próximo turno ou até atacar, causar dano, ou forçar alguém a fazer TR.</small></div>
+</div>
+</div>
+
+<div class="section">
+<h2>⚔️ Proficiências de Classe — Clérigo</h2>
+<div class="spell-group">
+<div class="feature"><strong>Passiva</strong> — Proficiência em Armaduras Leves e Médias<br/><small style="color:#aaa">Você é proficiente em armaduras leves e médias, além de escudos.</small></div>
+<div class="feature domain"><strong>Passiva</strong> — Proficiência em Armaduras Pesadas (Domínio)<br/><small style="color:#aaa">O Domínio do Crepúsculo concede proficiência em armaduras pesadas.</small></div>
+</div>
+</div>
+
+<div class="section">
+<h2>🌙 Timeline de Habilidades — Domínio do Crepúsculo</h2>
+<div id="timeline-container" class="timeline"></div>
+</div>
+</div>
+</div>
+
+<script>
+// Banco de Magias - Clérigo D&D 5e
+const CLERIC_SPELLS = [
+  {nome: "Guidance", nivel: 0, concentracao: true, ritual: false, dominio: false, nivelMinimo: 1, descricao: "Toque uma criatura. Uma vez antes do fim do efeito, ela pode rolar 1d4 e adicionar ao teste de atributo à sua escolha.", tags: ["buff", "utilidade"]},
+  {nome: "Sacred Flame", nivel: 0, concentracao: false, ritual: false, dominio: false, nivelMinimo: 1, descricao: "Chamas sagradas descem sobre uma criatura. A criatura deve ter sucesso em um TR de Destreza ou sofre 1d8 de dano radiante.", tags: ["dano"]},
+  {nome: "Light", nivel: 0, concentracao: false, ritual: false, dominio: false, nivelMinimo: 1, descricao: "Você toca um objeto que não seja maior que 3 metros. Até a magia acabar, o objeto emite luz plena num raio de 6 metros.", tags: ["utilidade"]},
+  {nome: "Spare the Dying", nivel: 0, concentracao: false, ritual: false, dominio: false, nivelMinimo: 1, descricao: "Você toca uma criatura viva que esteja com 0 pontos de vida. A criatura se torna estável.", tags: ["cura", "utilidade"]},
+  {nome: "Thaumaturgy", nivel: 0, concentracao: false, ritual: false, dominio: false, nivelMinimo: 1, descricao: "Você manifesta um pequeno prodígio, um sinal de poder sobrenatural. Voz ampliada, chamas tremeluzem, tremores leves, etc.", tags: ["utilidade"]},
+  {nome: "Fogo das Fadas", nivel: 1, concentracao: true, ritual: false, dominio: true, nivelMinimo: 1, descricao: "Cada objeto em um cubo de 6m emite luz azul, verde ou violeta. Criaturas na área são delineadas se falharem em Destreza.", tags: ["utilidade", "controle"]},
+  {nome: "Sono", nivel: 1, concentracao: false, ritual: false, dominio: true, nivelMinimo: 1, descricao: "Faz criaturas adormecerem em ordem ascendente de PV atual. Até 5d8 PV de criaturas caem inconscientes.", tags: ["controle"]},
+  {nome: "Raio Lunar", nivel: 2, concentracao: true, ritual: false, dominio: true, nivelMinimo: 3, descricao: "Um feixe prateado causa 2d10 radiante (TR Constituição para metade). Você pode mover a área em turnos posteriores.", tags: ["dano", "controle"]},
+  {nome: "Ver o Invisível", nivel: 2, concentracao: false, ritual: false, dominio: true, nivelMinimo: 3, descricao: "Você vê criaturas e objetos invisíveis e o Plano Etéreo por até 1 hora.", tags: ["utilidade"]},
+  {nome: "Bless", nivel: 1, concentracao: true, ritual: false, dominio: false, nivelMinimo: 1, descricao: "Até 3 criaturas ganham 1d4 em rolagens de ataque e testes de resistência enquanto a magia durar.", tags: ["buff"]},
+  {nome: "Bane", nivel: 1, concentracao: true, ritual: false, dominio: false, nivelMinimo: 1, descricao: "Até 3 criaturas devem subtrair 1d4 de suas rolagens de ataque e testes de resistência enquanto a magia durar.", tags: ["controle"]},
+  {nome: "Healing Word", nivel: 1, concentracao: false, ritual: false, dominio: false, nivelMinimo: 1, descricao: "Uma criatura à sua escolha que você possa ver recupera 1d4 + seu modificador de Sabedoria em PV. Ação bônus.", tags: ["cura"]},
+  {nome: "Protection from Evil and Good", nivel: 1, concentracao: true, ritual: false, dominio: false, nivelMinimo: 1, descricao: "Uma criatura está protegida contra aberrações, celestiais, corruptores, elementais, fadas e mortos-vivos. Desvantagem em ataques contra ela.", tags: ["buff"]},
+  {nome: "Shield of Faith", nivel: 1, concentracao: true, ritual: false, dominio: false, nivelMinimo: 1, descricao: "Um campo cintilante aparece e envolve uma criatura à sua escolha, concedendo +2 de bônus na CA.", tags: ["buff"]},
+  {nome: "Detect Magic", nivel: 1, concentracao: true, ritual: true, dominio: false, nivelMinimo: 1, descricao: "Você sente a presença de magia em um raio de 9 metros e pode usar sua ação para ver uma aura ao redor de criaturas ou objetos.", tags: ["utilidade"]},
+  {nome: "Cure Wounds", nivel: 1, concentracao: false, ritual: false, dominio: false, nivelMinimo: 1, descricao: "Uma criatura que você tocar recupera 1d8 + seu modificador de Sabedoria em PV.", tags: ["cura"]},
+  {nome: "Guiding Bolt", nivel: 1, concentracao: false, ritual: false, dominio: false, nivelMinimo: 1, descricao: "Faça um ataque mágico à distância. Acerto: 4d6 de dano radiante e o próximo ataque contra o alvo tem vantagem.", tags: ["dano", "buff"]},
+  {nome: "Sanctuary", nivel: 1, concentracao: false, ritual: false, dominio: false, nivelMinimo: 1, descricao: "Você protege uma criatura. Qualquer criatura que tente atacá-la deve fazer um TR de Sabedoria ou escolher um novo alvo.", tags: ["buff", "controle"]},
+  {nome: "Command", nivel: 1, concentracao: false, ritual: false, dominio: false, nivelMinimo: 1, descricao: "Você dá uma ordem de uma palavra a uma criatura. Ela deve obedecer no próximo turno se falhar em Sabedoria.", tags: ["controle"]},
+  {nome: "Spiritual Weapon", nivel: 2, concentracao: false, ritual: false, dominio: false, nivelMinimo: 3, descricao: "Você cria uma arma espectral flutuante. Ação bônus para mover e atacar. 1d8 + modificador de Sabedoria de dano de força.", tags: ["dano"]},
+  {nome: "Aid", nivel: 2, concentracao: false, ritual: false, dominio: false, nivelMinimo: 3, descricao: "Até 3 criaturas aumentam seu máximo de PV e PV atuais em 5 por 8 horas.", tags: ["buff", "cura"]},
+  {nome: "Prayer of Healing", nivel: 2, concentracao: false, ritual: false, dominio: false, nivelMinimo: 3, descricao: "Até 6 criaturas recuperam 2d8 + seu modificador de Sabedoria em PV. Requer 10 minutos para conjurar.", tags: ["cura"]},
+  {nome: "Lesser Restoration", nivel: 2, concentracao: false, ritual: false, dominio: false, nivelMinimo: 3, descricao: "Você toca uma criatura e encerra uma doença ou condição (cego, surdo, paralisado ou envenenado).", tags: ["cura", "utilidade"]},
+  {nome: "Hold Person", nivel: 2, concentracao: true, ritual: false, dominio: false, nivelMinimo: 3, descricao: "Escolha um humanoide que você possa ver. Ele deve ter sucesso em TR de Sabedoria ou fica paralisado.", tags: ["controle"]},
+  {nome: "Silence", nivel: 2, concentracao: true, ritual: true, dominio: false, nivelMinimo: 3, descricao: "Nenhum som pode ser criado em uma esfera de 6 metros. Criaturas dentro estão imunes a dano trovejante.", tags: ["controle", "utilidade"]},
+  {nome: "Spirit Guardians", nivel: 3, concentracao: true, ritual: false, dominio: false, nivelMinimo: 5, descricao: "Espíritos protetores cercam você. Inimigos em 4,5m têm movimento pela metade e sofrem 3d8 de dano (TR Sabedoria para metade).", tags: ["dano", "controle"]},
+  {nome: "Revivify", nivel: 3, concentracao: false, ritual: false, dominio: false, nivelMinimo: 5, descricao: "Você toca uma criatura que morreu no último minuto. Ela retorna à vida com 1 PV. Requer diamantes de 300 PO.", tags: ["cura"]},
+  {nome: "Mass Healing Word", nivel: 3, concentracao: false, ritual: false, dominio: false, nivelMinimo: 5, descricao: "Até 6 criaturas recuperam 1d4 + seu modificador de Sabedoria em PV. Ação bônus.", tags: ["cura"]},
+  {nome: "Dispel Magic", nivel: 3, concentracao: false, ritual: false, dominio: false, nivelMinimo: 5, descricao: "Escolha uma criatura, objeto ou efeito mágico. Qualquer magia de 3° nível ou inferior é encerrada.", tags: ["utilidade"]},
+  {nome: "Beacon of Hope", nivel: 3, concentracao: true, ritual: false, dominio: false, nivelMinimo: 5, descricao: "Criaturas escolhidas têm vantagem em TR de Sabedoria e testes contra morte, e curas maximizadas.", tags: ["buff", "cura"]},
+  {nome: "Aura de Vitalidade", nivel: 3, concentracao: true, ritual: false, dominio: true, nivelMinimo: 5, descricao: "Você ou uma criatura a 9m recupera 2d6 PV como ação bônus. Dura 1 minuto.", tags: ["cura", "buff"]},
+  {nome: "Pequena Cabana de Leomund", nivel: 3, concentracao: false, ritual: true, dominio: true, nivelMinimo: 5, descricao: "Cria uma cúpula imóvel que protege você e aliados por até 8 horas.", tags: ["utilidade"]},
+  {nome: "Death Ward", nivel: 4, concentracao: false, ritual: false, dominio: false, nivelMinimo: 7, descricao: "Você toca uma criatura. Na primeira vez que ela cair para 0 PV, ela cai para 1 PV.", tags: ["buff"]},
+  {nome: "Guardian of Faith", nivel: 4, concentracao: false, ritual: false, dominio: false, nivelMinimo: 7, descricao: "Um guardião espectral aparece. Inimigos a 3m fazem TR de Destreza ou sofrem 20 de dano radiante.", tags: ["dano", "controle"]},
+  {nome: "Freedom of Movement", nivel: 4, concentracao: false, ritual: false, dominio: false, nivelMinimo: 7, descricao: "O movimento da criatura tocada não pode ser reduzido ou impedido por terreno ou magia.", tags: ["buff", "utilidade"]},
+  {nome: "Banishment", nivel: 4, concentracao: true, ritual: false, dominio: false, nivelMinimo: 7, descricao: "Você tenta enviar uma criatura para outro plano. TR de Carisma ou a criatura é banida.", tags: ["controle"]},
+  {nome: "Aura de Devoção", nivel: 4, concentracao: true, ritual: false, dominio: true, nivelMinimo: 7, descricao: "Aura que protege e fortalece aliados próximos.", tags: ["buff"]},
+  {nome: "Invisibilidade Maior", nivel: 4, concentracao: true, ritual: false, dominio: true, nivelMinimo: 7, descricao: "Uma criatura fica invisível mesmo quando ataca ou conjura magias.", tags: ["utilidade", "controle"]},
+  {nome: "Mass Cure Wounds", nivel: 5, concentracao: false, ritual: false, dominio: false, nivelMinimo: 9, descricao: "Até 6 criaturas recuperam 3d8 + seu modificador de Sabedoria em PV.", tags: ["cura"]},
+  {nome: "Raise Dead", nivel: 5, concentracao: false, ritual: false, dominio: false, nivelMinimo: 9, descricao: "Você retorna uma criatura morta há no máximo 10 dias à vida com 1 PV. Requer diamantes de 500 PO.", tags: ["cura"]},
+  {nome: "Greater Restoration", nivel: 5, concentracao: false, ritual: false, dominio: false, nivelMinimo: 9, descricao: "Você remove redução de atributos, níveis de exaustão, petrificação, ou encanta/amaldiçoa um item.", tags: ["cura", "utilidade"]},
+  {nome: "Flame Strike", nivel: 5, concentracao: false, ritual: false, dominio: false, nivelMinimo: 9, descricao: "Uma coluna vertical de fogo divino desce. Criaturas na área fazem TR de Destreza ou sofrem 4d6 de fogo + 4d6 radiante.", tags: ["dano"]},
+  {nome: "Círculo do Poder", nivel: 5, concentracao: true, ritual: false, dominio: true, nivelMinimo: 9, descricao: "Aliados na área têm vantagem em TR contra magias e efeitos; reduz impacto em sucesso.", tags: ["buff", "controle"]},
+  {nome: "Despistar", nivel: 5, concentracao: true, ritual: false, dominio: true, nivelMinimo: 9, descricao: "Cria um duplo ilusório enquanto você fica invisível; pode trocar percepção com o duplo.", tags: ["utilidade", "controle"]}
+];
+
+// Estado do aplicativo
+let preparedSpells = new Set();
+
+// Banco de Habilidades - Domínio do Crepúsculo
+const TWILIGHT_DOMAIN_ABILITIES = [
+  {
+    nome: "Olhos da Noite",
+    nivel: 1,
+    tipo: "passiva",
+    descricao: "Você ganha visão no escuro 300 pés. Ação para dar essa visão a aliados por 1 hora (Sab vezes por descanso longo)."
+  },
+  {
+    nome: "Vigilância Bendita",
+    nivel: 1,
+    tipo: "passiva",
+    descricao: "Após descanso longo, escolha uma criatura (pode ser você). Ela tem vantagem em testes de iniciativa."
+  },
+  {
+    nome: "Canalizar Divindade: Santuário Crepuscular",
+    nivel: 2,
+    tipo: "acao",
+    descricao: "Ação para criar esfera de 30 pés que se move com você. Aliados ganham PV temporários e escuridão mágica é dissipada."
+  },
+  {
+    nome: "Passos da Noite",
+    nivel: 6,
+    tipo: "passiva",
+    descricao: "Você pode voar até sua velocidade de caminhada quando está em penumbra ou escuridão."
+  },
+  {
+    nome: "Golpe Divino",
+    nivel: 8,
+    tipo: "acao-bonus",
+    descricao: "Adicione 1d8 de dano radiante a um ataque de arma corpo a corpo. (1x por turno)"
+  },
+  {
+    nome: "Sentinela Crepuscular",
+    nivel: 17,
+    tipo: "passiva",
+    descricao: "Você e aliados em Santuário Crepuscular têm resistência a dano radiante e necrótico."
+  }
+];
+
+// Habilidades Raciais - Firbolg
+const FIRBOLG_RACIAL_ABILITIES = [
+  {
+    nome: "Força Oculta",
+    tipo: "passiva",
+    descricao: "Você conta como um tamanho maior ao determinar capacidade de carga e peso que pode empurrar/arrastar/erguer."
+  },
+  {
+    nome: "Fala das Feras e Folhas",
+    tipo: "passiva",
+    descricao: "Você pode comunicar ideias simples com bestas e plantas. Elas podem entender suas palavras, mas você não tem habilidade especial para entendê-las."
+  },
+  {
+    nome: "Passos Invisíveis",
+    tipo: "acao-bonus",
+    descricao: "1x por descanso curto/longo. Ação bônus. Você fica magicamente invisível até o início do seu próximo turno ou até atacar, causar dano ou forçar alguém a fazer TR."
+  }
+];
+
+// Calcular máximo de magias preparáveis (Sabedoria 3 + nível)
+function getMaxPrepared() {
+  const nivel = parseInt(document.getElementById('nivel').value) || 1;
+  return 3 + nivel; // Assumindo modificador de Sabedoria +3
+}
+
+// Renderizar toda a aba Diário da Campanha (resumo para jogo)
+function renderCampanhaTab() {
+  const nivel = parseInt(document.getElementById('nivel').value) || 1;
+  const maxPrepared = getMaxPrepared();
+  const prepared = preparedSpells.size;
+  
+  // Atualizar infos pessoais
+  const nome = document.getElementById('nome').value || "Vah'Lunara";
+  document.getElementById('campanha-nome').textContent = nome;
+  document.getElementById('campanha-nivel').textContent = nivel;
+  
+  // PV (8 + 4 por nível = 8 + 4*(nivel-1) = 4 + 4*nivel)
+  const hp = 8 + 4 * (nivel - 1);
+  document.getElementById('campanha-hp').textContent = hp;
+  
+  // Contadores
+  document.getElementById('campanha-prepared-count').textContent = prepared;
+  document.getElementById('campanha-prepared-max').textContent = maxPrepared;
+  
+  // Magias preparadas de hoje
+  const preparedSpellsList = CLERIC_SPELLS.filter(s => preparedSpells.has(s.nome) && s.nivelMinimo <= nivel);
+  const preparedContainer = document.getElementById('campanha-prepared-spells');
+  if (preparedSpellsList.length > 0) {
+    preparedContainer.innerHTML = preparedSpellsList.map(spell => {
+      const conc = spell.concentracao ? '⚠️ Conc' : '';
+      return `<div class="spell" style="padding: 8px; border: 1px solid #9da6ff;">
+        <strong>${spell.nome}</strong><br/>
+        <small style="color: #aaa">Nível ${spell.nivel} ${conc}</small><br/>
+        <small style="color: #aaa; display: block; margin-top: 4px;">${spell.descricao}</small>
+      </div>`;
+    }).join('');
+  } else {
+    preparedContainer.innerHTML = '<p style="color: #666; grid-column: 1/-1;">Nenhuma magia preparada. Vá para Magias e prepare.</p>';
+  }
+  
+  // Rituais disponíveis (não preparados)
+  const rituals = CLERIC_SPELLS.filter(s => 
+    s.ritual && 
+    s.nivelMinimo <= nivel && 
+    !s.dominio && 
+    !preparedSpells.has(s.nome)
+  );
+  const ritualsContainer = document.getElementById('campanha-rituals');
+  if (rituals.length > 0) {
+    ritualsContainer.innerHTML = rituals.map(spell => {
+      return `<div class="spell" style="padding: 8px; border: 1px solid #9da6ff;">
+        <strong>${spell.nome}</strong><br/>
+        <small style="color: #aaa">🕯️ Ritual</small>
+      </div>`;
+    }).join('');
+  } else {
+    ritualsContainer.innerHTML = '<p style="color: #666; grid-column: 1/-1;">Nenhum ritual disponível neste nível.</p>';
+  }
+  
+  // Contador de rituais
+  document.getElementById('campanha-rituals-count').textContent = rituals.length;
+  
+  // Truques disponíveis (apenas Guidance, Sacred Flame, Thaumaturgy)
+  const cantripsAllowed = ['Guidance', 'Sacred Flame', 'Thaumaturgy'];
+  const cantrips = CLERIC_SPELLS.filter(s => s.nivel === 0 && cantripsAllowed.includes(s.nome));
+  const cantripsContainer = document.getElementById('campanha-cantrips');
+  if (cantrips.length > 0) {
+    cantripsContainer.innerHTML = cantrips.map(spell => {
+      return `<div class="spell" style="padding: 8px; border: 1px solid #d4af37; background: rgba(212, 175, 55, 0.1);">
+        <strong style="color: #d4af37">${spell.nome}</strong><br/>
+        <small style="color: #aaa">${spell.descricao}</small>
+      </div>`;
+    }).join('');
+  } else {
+    cantripsContainer.innerHTML = '<p style="color: #666; grid-column: 1/-1;">Nenhum truque desbloqueado.</p>';
+  }
+  
+  // Habilidades Raciais - Firbolg
+  const racialAbilitiesContainer = document.getElementById('campanha-racial-abilities');
+  if (racialAbilitiesContainer && FIRBOLG_RACIAL_ABILITIES) {
+    racialAbilitiesContainer.innerHTML = FIRBOLG_RACIAL_ABILITIES.map(ability => {
+      let typeLabel = '';
+      let typeBg = '';
+      switch(ability.tipo) {
+        case 'passiva':
+          typeLabel = '🔷 Passiva';
+          typeBg = '#4ecdc4';
+          break;
+        case 'acao':
+          typeLabel = '⚔️ Ação';
+          typeBg = '#ff6b6b';
+          break;
+        case 'acao-bonus':
+          typeLabel = '⚡ Ação Bônus';
+          typeBg = '#ffa500';
+          break;
+      }
+      return `<div class="spell" style="padding: 8px; border: 1px solid ${typeBg}; background: rgba(212, 175, 55, 0.05);">
+        <strong style="color: #d4af37">${ability.nome}</strong><br/>
+        <small style="color: #aaa; display:block; margin-top:4px; margin-bottom:4px">${typeLabel}</small>
+        <small style="color: #aaa">${ability.descricao}</small>
+      </div>`;
+    }).join('');
+  }
+}
+
+// Sincronizar Campanha quando qualquer coisa muda
+function syncCampanhaTab() {
+  renderCampanhaTab();
+}
+
+// Renderizar timeline de habilidades
+function renderTimeline() {
+  const nivel = parseInt(document.getElementById('nivel').value) || 1;
+  const container = document.getElementById('timeline-container');
+  
+  container.innerHTML = '';
+  
+  TWILIGHT_DOMAIN_ABILITIES.forEach(ability => {
+    const isUnlocked = ability.nivel <= nivel;
+    const itemClass = isUnlocked ? 'timeline-item' : 'timeline-item locked';
+    
+    let typeClass = '';
+    let typeLabel = '';
+    
+    switch(ability.tipo) {
+      case 'passiva':
+        typeClass = 'type-passiva';
+        typeLabel = 'PASSIVA';
+        break;
+      case 'acao':
+        typeClass = 'type-acao';
+        typeLabel = 'AÇÃO';
+        break;
+      case 'acao-bonus':
+        typeClass = 'type-acao-bonus';
+        typeLabel = 'AÇÃO BÔNUS';
+        break;
+    }
+    
+    container.innerHTML += `
+      <div class="${itemClass}">
+        <div class="timeline-dot">${ability.nivel}</div>
+        <div class="timeline-content">
+          <h4>${ability.nome}</h4>
+          <small><span class="ability-type ${typeClass}">${typeLabel}</span> ${ability.descricao}</small>
+        </div>
+      </div>
+    `;
+  });
+}
+
+// Renderizar todas as magias nas seções principais
+function updateSpells() {
+  const nivel = parseInt(document.getElementById('nivel').value) || 1;
+  const container = document.getElementById('spells-container');
+  
+  // Salvar estado de colapso das seções antes de atualizar
+  const collapsedSections = [];
+  document.querySelectorAll('.spell-group.collapsed').forEach(section => {
+    collapsedSections.push(section.id);
+  });
+  
+  // Salvar posição do scroll
+  const scrollPos = window.pageYOffset || document.documentElement.scrollTop;
+  
+  // Filtrar e agrupar magias
+  const cantrips = CLERIC_SPELLS.filter(s => s.nivel === 0);
+  const domainSpells = CLERIC_SPELLS.filter(s => s.dominio && s.nivel > 0);
+  const preparableSpells = CLERIC_SPELLS.filter(s => !s.dominio && s.nivel > 0 && s.nivelMinimo <= nivel);
+  const lockedSpells = CLERIC_SPELLS.filter(s => !s.dominio && s.nivel > 0 && s.nivelMinimo > nivel);
+  
+  container.innerHTML = '';
+  
+  // Renderizar Truques
+  if (cantrips.length > 0) {
+    container.innerHTML += renderSpellGroup('✨ Truques', cantrips, nivel, false);
+  }
+  
+  // Renderizar Magias de Domínio
+  if (domainSpells.length > 0) {
+    container.innerHTML += renderSpellGroup('🌙 Magias de Domínio (Sempre Preparadas)', domainSpells, nivel, true);
+  }
+  
+  // Renderizar Magias Preparáveis (layout especial de duas colunas)
+  if (preparableSpells.length > 0) {
+    container.innerHTML += renderPreparableSpellsLayout(preparableSpells, nivel);
+  }
+  
+  // Renderizar Magias Bloqueadas
+  if (lockedSpells.length > 0) {
+    container.innerHTML += renderSpellGroup('🔒 Magias Bloqueadas', lockedSpells, nivel, false, true);
+  }
+  
+  updateSpellCount();
+  updateActions(); // Atualizar aba de ações também
+  renderTimeline(); // Atualizar timeline de habilidades
+  renderCampanhaTab(); // Atualizar resumo de campanha
+  
+  // Restaurar estado de colapso das seções
+  collapsedSections.forEach(sectionId => {
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.classList.add('collapsed');
+    }
+  });
+  
+  // Restaurar posição do scroll
+  window.scrollTo(0, scrollPos);
+}
+
+// Renderizar ABA AÇÕES (o que pode usar AGORA)
+function updateActions() {
+  const nivel = parseInt(document.getElementById('nivel').value) || 1;
+  const container = document.getElementById('actions-container');
+  
+  // Apenas os 3 truques permitidos
+  const cantripsAllowed = ['Guidance', 'Sacred Flame', 'Thaumaturgy'];
+  
+  // Filtrar magias ativas
+  const cantrips = CLERIC_SPELLS.filter(s => s.nivel === 0 && cantripsAllowed.includes(s.nome));
+  const domainSpells = CLERIC_SPELLS.filter(s => s.dominio && s.nivel > 0 && s.nivelMinimo <= nivel);
+  const preparedSpellsList = CLERIC_SPELLS.filter(s => preparedSpells.has(s.nome) && s.nivelMinimo <= nivel);
+  // Rituais: não precisam estar preparados, mas não devem estar em outras categorias
+  const rituals = CLERIC_SPELLS.filter(s => 
+    s.ritual && 
+    s.nivelMinimo <= nivel && 
+    !s.dominio && 
+    !preparedSpells.has(s.nome)
+  );
+  
+  container.innerHTML = '';
+  
+  // Seção 1: Truques
+  container.innerHTML += '<div class="spell-group"><h3>🔹 Truques</h3>';
+  cantrips.forEach(spell => {
+    container.innerHTML += renderActionSpell(spell, 'cantrip');
+  });
+  container.innerHTML += '</div>';
+  
+  // Seção 2: Magias de Domínio (sempre preparadas)
+  if (domainSpells.length > 0) {
+    container.innerHTML += '<div class="spell-group"><h3>⭐ Magias de Domínio (Sempre Preparadas)</h3>';
+    domainSpells.forEach(spell => {
+      container.innerHTML += renderActionSpell(spell, 'domain');
+    });
+    container.innerHTML += '</div>';
+  }
+  
+  // Seção 3: Magias Preparadas Hoje
+  if (preparedSpellsList.length > 0) {
+    container.innerHTML += '<div class="spell-group"><h3>📘 Magias Preparadas Hoje</h3>';
+    preparedSpellsList.forEach(spell => {
+      container.innerHTML += renderActionSpell(spell, 'prepared');
+    });
+    container.innerHTML += '</div>';
+  } else {
+    container.innerHTML += '<div class="spell-group"><h3>📘 Magias Preparadas Hoje</h3>';
+    container.innerHTML += '<p style="text-align:center;color:#666;margin:20px">Nenhuma magia preparada. Vá para a aba Magias para preparar.</p>';
+    container.innerHTML += '</div>';
+  }
+  
+  // Seção 4: Rituais Disponíveis (não precisam preparo)
+  if (rituals.length > 0) {
+    container.innerHTML += '<div class="spell-group"><h3>🕯️ Rituais Disponíveis (Não Usam Slot)</h3>';
+    rituals.forEach(spell => {
+      container.innerHTML += renderActionSpell(spell, 'ritual');
+    });
+    container.innerHTML += '</div>';
+  }
+}
+
+// Renderizar magia para a aba de ações
+function renderActionSpell(spell, type) {
+  let classes = ['spell', 'action-spell'];
+  if (type === 'ritual') classes.push('ritual-spell');
+  
+  let badges = [];
+  
+  // Badge de tipo
+  if (type === 'cantrip') badges.push('<span class="tag">🟣 Truque</span>');
+  if (type === 'domain') badges.push('<span class="tag">⭐ Domínio</span>');
+  if (type === 'prepared') badges.push('<span class="tag">📘 Preparada</span>');
+  if (type === 'ritual') badges.push('<span class="tag">🕯️ Ritual • ⏳ 10min • ❌ Sem slot</span>');
+  
+  // Badge de ação
+  if (spell.nome === 'Healing Word' || spell.nome === 'Spiritual Weapon') {
+    badges.push('<span class="bonus-badge">⚡ Ação Bônus</span>');
+  } else {
+    badges.push('<span class="action-badge">⏱️ Ação</span>');
+  }
+  
+  // Badge de concentração
+  if (spell.concentracao) badges.push('<span class="tag">⚠️ Concentração</span>');
+  
+  let html = `<div class="${classes.join(' ')}">`;
+  html += `<strong>${spell.nome}</strong>`;
+  if (spell.nivel > 0) html += ` <small style="color:#9da6ff">— Nível ${spell.nivel}</small>`;
+  html += `<br/>`;
+  html += `<small style="color:#aaa">${spell.descricao}</small>`;
+  html += `<div class="tags" style="margin-top:8px">${badges.join(' ')}</div>`;
+  html += `</div>`;
+  
+  return html;
+}
+
+// Renderizar layout especial de duas colunas para magias preparáveis
+function renderPreparableSpellsLayout(spells, nivel) {
+  const maxPrepared = getMaxPrepared();
+  const currentPrepared = preparedSpells.size;
+  
+  // Separar magias disponíveis e preparadas
+  const available = spells.filter(s => !preparedSpells.has(s.nome));
+  const prepared = spells.filter(s => preparedSpells.has(s.nome));
+  
+  const sectionId = 'section-preparaveis';
+  let html = `<div class="spell-group collapsed" id="${sectionId}">`;
+  html += `<div class="spell-group-header" onclick="toggleSection('${sectionId}')">`;
+  html += `<h3 class="spell-group-title">📖 Magias Preparáveis <span style="color:#666;font-size:0.85em">(${spells.length})</span></h3>`;
+  html += `<span class="collapse-icon">▼</span>`;
+  html += `</div>`;
+  html += `<div class="spell-group-content">`;
+  html += `<div class="preparable-layout">`;
+  
+  // Container de magias disponíveis
+  html += `<div class="spell-container">`;
+  html += `<h4>💠 Disponíveis (${available.length})</h4>`;
+  available.forEach(spell => {
+    html += renderSingleSpell(spell, nivel, false, false, currentPrepared >= maxPrepared);
+  });
+  if (available.length === 0) {
+    html += `<p style="text-align:center;color:#666;margin-top:40px">Todas as magias estão preparadas</p>`;
+  }
+  html += `</div>`;
+  
+  // Container de magias preparadas
+  html += `<div class="spell-container prepared-container">`;
+  html += `<h4>✨ Preparadas <span class="spell-count-badge">${currentPrepared}/${maxPrepared}</span></h4>`;
+  prepared.forEach(spell => {
+    html += renderSingleSpell(spell, nivel, false, true, false);
+  });
+  if (prepared.length === 0) {
+    html += `<p style="text-align:center;color:#666;margin-top:40px">Nenhuma magia preparada</p>`;
+  }
+  html += `</div>`;
+  
+  html += `</div></div></div>`;
+  return html;
+}
+
+// Toggle de seções recolhíveis
+function toggleSection(sectionId) {
+  const section = document.getElementById(sectionId);
+  if (section) {
+    section.classList.toggle('collapsed');
+  }
+}
+
+// Renderizar uma única magia
+function renderSingleSpell(spell, nivel, isDomain, isPrepared, disablePrepare) {
+  const locked = spell.nivelMinimo > nivel;
+  
+  let classes = ['spell'];
+  if (locked) classes.push('locked');
+  if (isDomain) classes.push('domain');
+  if (isPrepared) classes.push('prepared');
+  
+  let info = [];
+  if (spell.nivel > 0) info.push(`Nível ${spell.nivel}`);
+  else info.push('Truque');
+  if (isDomain) info.push('Domínio');
+  if (spell.concentracao) info.push('Concentração');
+  if (spell.ritual) info.push('Ritual');
+  if (locked) info.push('🔒 Bloqueada');
+  
+  let html = `<div class="${classes.join(' ')}">`;
+  html += `<strong>${spell.nome}</strong><br/>`;
+  html += `<small>${info.join(' • ')}</small><br/>`;
+  html += `<small style="color:#aaa">${spell.descricao}</small>`;
+  
+  // Tags
+  if (spell.tags && spell.tags.length > 0) {
+    html += `<div class="tags">`;
+    spell.tags.forEach(tag => {
+      html += `<span class="tag">${tag}</span>`;
+    });
+    html += `</div>`;
+  }
+  
+  // Botões de ação
+  if (!isDomain && !locked && spell.nivel > 0) {
+    if (isPrepared) {
+      html += `<br/><button onclick="unprepareSpell('${spell.nome}')">❌ Remover</button>`;
+    } else {
+      html += `<br/><button onclick="prepareSpell('${spell.nome}')" ${disablePrepare ? 'disabled' : ''}>➕ Preparar</button>`;
+    }
+  }
+  
+  html += `</div>`;
+  return html;
+}
+
+// Renderizar um grupo de magias
+function renderSpellGroup(title, spells, nivel, isDomain, isLocked = false) {
+  const sectionId = 'section-' + title.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+  let html = `<div class="spell-group collapsed" id="${sectionId}">`;
+  html += `<div class="spell-group-header" onclick="toggleSection('${sectionId}')">`;
+  html += `<h3 class="spell-group-title">${title} <span style="color:#666;font-size:0.85em">(${spells.length})</span></h3>`;
+  html += `<span class="collapse-icon">▼</span>`;
+  html += `</div>`;
+  html += `<div class="spell-group-content">`;
+  
+  spells.forEach(spell => {
+    const prepared = isDomain;
+    html += renderSingleSpell(spell, nivel, isDomain, prepared, false);
+  });
+  
+  html += `</div></div>`;
+  return html;
+}
+
+// Preparar magia
+function prepareSpell(nome) {
+  if (preparedSpells.size < getMaxPrepared()) {
+    preparedSpells.add(nome);
+    updateSpells();
+    saveCharacterData();
+  }
+}
+
+// Remover magia preparada
+function unprepareSpell(nome) {
+  preparedSpells.delete(nome);
+  updateSpells();
+  saveCharacterData();
+}
+
+// Função para limpar dados duplicados e liberar espaço
+function cleanupStorage() {
+  try {
+    // Remover imagens duplicadas do characterSheet
+    const sheet = localStorage.getItem('characterSheet');
+    if (sheet) {
+      const data = JSON.parse(sheet);
+      if (data.images) {
+        delete data.images;
+        delete data.mainImageIndex;
+        localStorage.setItem('characterSheet', JSON.stringify(data));
+        console.log('✅ Dados duplicados removidos do characterSheet');
+      }
+    }
+    
+    // Mostrar uso atual
+    let totalSize = 0;
+    for (let key in localStorage) {
+      if (localStorage.hasOwnProperty(key)) {
+        totalSize += localStorage[key].length + key.length;
+      }
+    }
+    console.log(`📊 Espaço usado: ${(totalSize / 1024).toFixed(2)} KB`);
+    
+    const images = getCharacterImages();
+    console.log(`🖼️ Total de imagens: ${images.length}`);
+    
+    return true;
+  } catch (error) {
+    console.error('Erro ao limpar storage:', error);
+    return false;
+  }
+}
+
+// Comprimir imagem antes de salvar
+function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.8) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        
+        // Calcular dimensões mantendo proporção
+        if (width > height) {
+          if (width > maxWidth) {
+            height *= maxWidth / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width *= maxHeight / height;
+            height = maxHeight;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Converter para base64 comprimido
+        const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+        resolve(compressedBase64);
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// Gerenciar upload de imagem
+function handleImageUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  // Validar tipo de arquivo
+  if (!file.type.startsWith('image/')) {
+    alert('Por favor, selecione uma imagem válida');
+    event.target.value = '';
+    return;
+  }
+  
+  // Validar tamanho (máximo 10MB antes de comprimir)
+  if (file.size > 10 * 1024 * 1024) {
+    alert('Imagem muito grande. Máximo 10MB');
+    event.target.value = '';
+    return;
+  }
+  
+  // Comprimir e salvar imagem
+  compressImage(file, 800, 800, 0.7).then(compressedBase64 => {
+    try {
+      // Adicionar ao array de imagens
+      const images = getCharacterImages();
+      images.push(compressedBase64);
+      
+      // Se for a primeira imagem, definir como principal
+      if (images.length === 1) {
+        setMainImageIndex(0);
+      }
+      
+      saveCharacterImages(images);
+      renderImageGallery();
+      
+      console.log('Imagem adicionada com sucesso! Total:', images.length);
+      
+      // Limpar input
+      event.target.value = '';
+      saveCharacterData();
+    } catch (error) {
+      console.error('Erro ao processar imagem:', error);
+      if (error.name === 'QuotaExceededError') {
+        alert('Espaço de armazenamento cheio! Remova algumas imagens antes de adicionar novas.');
+      } else {
+        alert('Erro ao adicionar imagem. Tente novamente.');
+      }
+      event.target.value = '';
+    }
+  }).catch(error => {
+    console.error('Erro ao comprimir imagem:', error);
+    alert('Erro ao processar a imagem. Tente novamente.');
+    event.target.value = '';
+  });
+}
+
+// Exibir imagem da personagem no Diário (apenas a principal)
+function displayCharacterImage(base64) {
+  const campanhaWrapper = document.getElementById('campanha-char-image-wrapper');
+  
+  if (base64 && campanhaWrapper) {
+    campanhaWrapper.innerHTML = `<img src="${base64}" style="width:100%;height:100%;border-radius:8px;object-fit:cover;" alt="Avatar">`;
+  } else if (campanhaWrapper) {
+    campanhaWrapper.innerHTML = '👤';
+    campanhaWrapper.className = 'char-image-placeholder';
+  }
+}
+
+// Obter array de imagens
+function getCharacterImages() {
+  const stored = localStorage.getItem('characterImages');
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+// Salvar array de imagens
+function saveCharacterImages(images) {
+  localStorage.setItem('characterImages', JSON.stringify(images));
+}
+
+// Obter índice da imagem principal
+function getMainImageIndex() {
+  const stored = localStorage.getItem('mainImageIndex');
+  return stored ? parseInt(stored) : 0;
+}
+
+// Definir índice da imagem principal
+function setMainImageIndex(index) {
+  localStorage.setItem('mainImageIndex', String(index));
+  const images = getCharacterImages();
+  if (images[index]) {
+    displayCharacterImage(images[index]);
+  }
+}
+
+// Renderizar galeria de imagens
+function renderImageGallery() {
+  const images = getCharacterImages();
+  const mainIndex = getMainImageIndex();
+  const gallery = document.getElementById('image-gallery');
+  
+  console.log('Renderizando galeria:', images.length, 'imagens');
+  
+  if (!gallery) {
+    console.error('Elemento image-gallery não encontrado');
+    return;
+  }
+  
+  let html = '';
+  
+  images.forEach((img, index) => {
+    const isMain = index === mainIndex;
+    html += `<div class="gallery-item ${isMain ? 'main-image' : ''}" onclick="setMainImageAndRefresh(${index})">`;
+    html += `<img src="${img}" alt="Imagem ${index + 1}">`;
+    html += `<button class="gallery-delete-btn" onclick="event.stopPropagation(); deleteImage(${index})" title="Remover">✖</button>`;
+    html += `</div>`;
+  });
+  
+  gallery.innerHTML = html;
+  console.log('Galeria renderizada com sucesso');
+}
+
+// Definir imagem principal e atualizar tela
+function setMainImageAndRefresh(index) {
+  setMainImageIndex(index);
+  renderImageGallery();
+  saveCharacterData();
+}
+
+// Deletar imagem
+function deleteImage(index) {
+  if (!confirm('Remover esta imagem?')) return;
+  
+  const images = getCharacterImages();
+  const mainIndex = getMainImageIndex();
+  
+  images.splice(index, 1);
+  saveCharacterImages(images);
+  
+  // Ajustar índice principal se necessário
+  if (images.length === 0) {
+    setMainImageIndex(0);
+    displayCharacterImage(null);
+  } else if (index === mainIndex) {
+    setMainImageIndex(0);
+  } else if (index < mainIndex) {
+    setMainImageIndex(mainIndex - 1);
+  }
+  
+  renderImageGallery();
+  saveCharacterData();
+}
+
+// Remover imagem (compatibilidade)
+function removeCharacterImage() {
+  localStorage.removeItem('characterImage');
+  document.getElementById('char-image-input').value = '';
+  displayCharacterImage(null);
+}
+
+// Salvar dados da personagem
+function saveCharacterData() {
+  const sheet = {
+    nome: document.getElementById('nome').value,
+    titulo: document.getElementById('titulo').value,
+    nivel: parseInt(document.getElementById('nivel').value) || 1,
+    lore: document.getElementById('lore').value,
+    preparedSpells: Array.from(preparedSpells),
+    // Atributos
+    attributes: {
+      str: parseInt(document.getElementById('attr_str').value) || 10,
+      dex: parseInt(document.getElementById('attr_dex').value) || 10,
+      con: parseInt(document.getElementById('attr_con').value) || 10,
+      int: parseInt(document.getElementById('attr_int').value) || 10,
+      wis: parseInt(document.getElementById('attr_wis').value) || 10,
+      cha: parseInt(document.getElementById('attr_cha').value) || 10
+    },
+    // Equipamento
+    equipment: {
+      // Slots visuais
+      head: document.getElementById('eq_head')?.value || '',
+      head_ac: parseInt(document.getElementById('eq_head_ac')?.value) || 0,
+      neck: document.getElementById('eq_neck')?.value || '',
+      neck_ac: parseInt(document.getElementById('eq_neck_ac')?.value) || 0,
+      hands: document.getElementById('eq_hands')?.value || '',
+      hands_ac: parseInt(document.getElementById('eq_hands_ac')?.value) || 0,
+      feet: document.getElementById('eq_feet')?.value || '',
+      feet_ac: parseInt(document.getElementById('eq_feet_ac')?.value) || 0,
+      mainhand: document.getElementById('eq_mainhand')?.value || '',
+      mainhand_atk: parseInt(document.getElementById('eq_mainhand_atk')?.value) || 0,
+      mainhand_dmg: document.getElementById('eq_mainhand_dmg')?.value || '',
+      offhand: document.getElementById('eq_offhand')?.value || '',
+      offhand_ac: parseInt(document.getElementById('eq_offhand_ac')?.value) || 0,
+      offhand_atk: parseInt(document.getElementById('eq_offhand_atk')?.value) || 0,
+      ring1: document.getElementById('eq_ring1')?.value || '',
+      ring1_ac: parseInt(document.getElementById('eq_ring1_ac')?.value) || 0,
+      ring2: document.getElementById('eq_ring2')?.value || '',
+      ring2_ac: parseInt(document.getElementById('eq_ring2_ac')?.value) || 0,
+      armor: document.getElementById('eq_armor')?.value || '',
+      armor_ac: parseInt(document.getElementById('eq_armor_ac')?.value) || 10,
+      armor_maxdex: parseInt(document.getElementById('eq_armor_maxdex')?.value) || 99,
+      cloak: document.getElementById('eq_cloak')?.value || '',
+      cloak_ac: parseInt(document.getElementById('eq_cloak_ac')?.value) || 0,
+      backpack: document.getElementById('eq_backpack')?.value || ''
+    }
+  };
+
+  // Persistir em um único objeto
+  try {
+    localStorage.setItem('characterSheet', JSON.stringify(sheet));
+  } catch (e) {
+    console.warn('Falha ao salvar characterSheet', e);
+  }
+
+  // Chaves individuais (compatibilidade)
+  localStorage.setItem('characterName', sheet.nome);
+  localStorage.setItem('characterTitle', sheet.titulo);
+  localStorage.setItem('characterLevel', String(sheet.nivel));
+  localStorage.setItem('characterLore', sheet.lore);
+  localStorage.setItem('characterPreparedSpells', JSON.stringify(sheet.preparedSpells));
+}
+
+// Restaurar dados da personagem
+function loadCharacterData() {
+  let sheet = null;
+  const raw = localStorage.getItem('characterSheet');
+  if (raw) {
+    try { sheet = JSON.parse(raw); } catch {}
+  }
+
+  if (sheet) {
+    if (sheet.nome) document.getElementById('nome').value = sheet.nome;
+    if (sheet.titulo) document.getElementById('titulo').value = sheet.titulo;
+    if (typeof sheet.nivel === 'number') document.getElementById('nivel').value = sheet.nivel;
+    if (typeof sheet.lore === 'string') document.getElementById('lore').value = sheet.lore;
+    if (Array.isArray(sheet.preparedSpells)) preparedSpells = new Set(sheet.preparedSpells);
+    
+    // Migrar imagens antigas se existirem
+    if (Array.isArray(sheet.images) && !localStorage.getItem('characterImages')) {
+      saveCharacterImages(sheet.images);
+      if (typeof sheet.mainImageIndex === 'number') {
+        setMainImageIndex(sheet.mainImageIndex);
+      }
+    } else if (sheet.image && !localStorage.getItem('characterImages')) {
+      // Migrar de imagem única para array
+      saveCharacterImages([sheet.image]);
+      setMainImageIndex(0);
+    }
+    renderImageGallery();
+    
+    // Restaurar atributos
+    if (sheet.attributes) {
+      document.getElementById('attr_str').value = sheet.attributes.str || 10;
+      document.getElementById('attr_dex').value = sheet.attributes.dex || 10;
+      document.getElementById('attr_con').value = sheet.attributes.con || 10;
+      document.getElementById('attr_int').value = sheet.attributes.int || 10;
+      document.getElementById('attr_wis').value = sheet.attributes.wis || 10;
+      document.getElementById('attr_cha').value = sheet.attributes.cha || 10;
+    }
+    
+    // Restaurar equipamento
+    if (sheet.equipment) {
+      // Novos slots visuais
+      if (document.getElementById('eq_head')) document.getElementById('eq_head').value = sheet.equipment.head || '';
+      if (document.getElementById('eq_head_ac')) document.getElementById('eq_head_ac').value = sheet.equipment.head_ac || 0;
+      if (document.getElementById('eq_neck')) document.getElementById('eq_neck').value = sheet.equipment.neck || '';
+      if (document.getElementById('eq_neck_ac')) document.getElementById('eq_neck_ac').value = sheet.equipment.neck_ac || 0;
+      if (document.getElementById('eq_hands')) document.getElementById('eq_hands').value = sheet.equipment.hands || '';
+      if (document.getElementById('eq_hands_ac')) document.getElementById('eq_hands_ac').value = sheet.equipment.hands_ac || 0;
+      if (document.getElementById('eq_feet')) document.getElementById('eq_feet').value = sheet.equipment.feet || '';
+      if (document.getElementById('eq_feet_ac')) document.getElementById('eq_feet_ac').value = sheet.equipment.feet_ac || 0;
+      if (document.getElementById('eq_mainhand')) document.getElementById('eq_mainhand').value = sheet.equipment.mainhand || '';
+      if (document.getElementById('eq_mainhand_atk')) document.getElementById('eq_mainhand_atk').value = sheet.equipment.mainhand_atk || 0;
+      if (document.getElementById('eq_mainhand_dmg')) document.getElementById('eq_mainhand_dmg').value = sheet.equipment.mainhand_dmg || '';
+      if (document.getElementById('eq_offhand')) document.getElementById('eq_offhand').value = sheet.equipment.offhand || '';
+      if (document.getElementById('eq_offhand_ac')) document.getElementById('eq_offhand_ac').value = sheet.equipment.offhand_ac || 0;
+      if (document.getElementById('eq_offhand_atk')) document.getElementById('eq_offhand_atk').value = sheet.equipment.offhand_atk || 0;
+      if (document.getElementById('eq_ring1')) document.getElementById('eq_ring1').value = sheet.equipment.ring1 || '';
+      if (document.getElementById('eq_ring1_ac')) document.getElementById('eq_ring1_ac').value = sheet.equipment.ring1_ac || 0;
+      if (document.getElementById('eq_ring2')) document.getElementById('eq_ring2').value = sheet.equipment.ring2 || '';
+      if (document.getElementById('eq_ring2_ac')) document.getElementById('eq_ring2_ac').value = sheet.equipment.ring2_ac || 0;
+      if (document.getElementById('eq_armor')) document.getElementById('eq_armor').value = sheet.equipment.armor || '';
+      if (document.getElementById('eq_armor_ac')) document.getElementById('eq_armor_ac').value = sheet.equipment.armor_ac || 10;
+      if (document.getElementById('eq_armor_maxdex')) document.getElementById('eq_armor_maxdex').value = sheet.equipment.armor_maxdex || 99;
+      if (document.getElementById('eq_cloak')) document.getElementById('eq_cloak').value = sheet.equipment.cloak || '';
+      if (document.getElementById('eq_cloak_ac')) document.getElementById('eq_cloak_ac').value = sheet.equipment.cloak_ac || 0;
+      if (document.getElementById('eq_backpack')) document.getElementById('eq_backpack').value = sheet.equipment.backpack || '';
+    }
+    
+    updateAttributeModifiers();
+    updateEquipmentStats();
+    return;
+  }
+
+  // Fallback para chaves antigas
+  const savedName = localStorage.getItem('characterName');
+  const savedTitle = localStorage.getItem('characterTitle');
+  const savedLevel = localStorage.getItem('characterLevel');
+  const savedLore = localStorage.getItem('characterLore');
+  const savedImage = localStorage.getItem('characterImage');
+  const savedPrepared = localStorage.getItem('characterPreparedSpells');
+
+  if (savedName) document.getElementById('nome').value = savedName;
+  if (savedTitle) document.getElementById('titulo').value = savedTitle;
+  if (savedLevel) document.getElementById('nivel').value = parseInt(savedLevel) || 1;
+  if (savedLore) document.getElementById('lore').value = savedLore;
+  if (savedPrepared) {
+    try { preparedSpells = new Set(JSON.parse(savedPrepared) || []); } catch {}
+  }
+  if (savedImage) displayCharacterImage(savedImage);
+}
+
+// Atualizar contador de magias
+function updateSpellCount() {
+  const nivel = parseInt(document.getElementById('nivel').value) || 1;
+  const domainCount = CLERIC_SPELLS.filter(s => s.dominio && s.nivel > 0 && s.nivelMinimo <= nivel).length;
+  const prepared = preparedSpells.size;
+  const max = getMaxPrepared();
+  
+  document.getElementById('spell-count').innerHTML = 
+    `<strong>Preparadas:</strong> ${prepared} / ${max} (+ ${domainCount} de domínio)`;
+  
+  // Atualizar resumo na aba personagem também
+  if (document.getElementById('quick-spell-count')) {
+    document.getElementById('quick-spell-count').textContent = `${prepared} / ${max}`;
+  }
+}
+
+// Trocar entre abas
+function switchTab(tabName) {
+  // Desativar todas as abas
+  document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+  
+  // Ativar aba selecionada
+  const btn = document.querySelector(`.tab[data-tab="${tabName}"]`);
+  if (btn) btn.classList.add('active');
+  document.getElementById(`tab-${tabName}`).classList.add('active');
+}
+
+// Inicializar tabs com listeners defensivos
+function initTabs() {
+  document.querySelectorAll('.tab').forEach(btn => {
+    // evitar comportamento de submit caso entre em um form
+    btn.setAttribute('type', 'button');
+    btn.addEventListener('click', () => {
+      const target = btn.getAttribute('data-tab');
+      if (target) switchTab(target);
+    });
+  });
+}
+
+// Mudança de nível: recalcular e salvar
+function onLevelChange() {
+  updateSpells();
+  updateActions();
+  renderTimeline();
+  renderCampanhaTab();
+  saveCharacterData();
+}
+
+// Calcular modificador de atributo
+function calculateModifier(score) {
+  return Math.floor((score - 10) / 2);
+}
+
+// Atualizar modificadores dos atributos
+function updateAttributeModifiers() {
+  const attrs = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
+  attrs.forEach(attr => {
+    const score = parseInt(document.getElementById(`attr_${attr}`).value) || 10;
+    const mod = calculateModifier(score);
+    const modStr = mod >= 0 ? `+${mod}` : `${mod}`;
+    document.getElementById(`mod_${attr}`).textContent = modStr;
+  });
+  
+  // Recalcular CA
+  calculateAC();
+}
+
+// Quando atributos mudam
+function onAttributeChange() {
+  updateAttributeModifiers();
+  saveCharacterData();
+}
+
+// Atualizar stats de equipamento (CA e Ataque)
+function updateEquipmentStats() {
+  // Calcular CA
+  const dex = parseInt(document.getElementById('attr_dex').value) || 10;
+  const dexMod = calculateModifier(dex);
+  
+  // AC base da armadura
+  let armorBase = parseInt(document.getElementById('eq_armor_ac').value) || 10;
+  let maxDex = parseInt(document.getElementById('eq_armor_maxdex').value) || 99;
+  
+  // CA = base da armadura + DEX (limitado por max) + bônus de itens
+  let totalAC = armorBase + Math.min(dexMod, maxDex);
+  
+  // Somar bônus de todos os slots
+  totalAC += parseInt(document.getElementById('eq_head_ac').value) || 0;
+  totalAC += parseInt(document.getElementById('eq_neck_ac').value) || 0;
+  totalAC += parseInt(document.getElementById('eq_hands_ac').value) || 0;
+  totalAC += parseInt(document.getElementById('eq_feet_ac').value) || 0;
+  totalAC += parseInt(document.getElementById('eq_offhand_ac').value) || 0;
+  totalAC += parseInt(document.getElementById('eq_ring1_ac').value) || 0;
+  totalAC += parseInt(document.getElementById('eq_ring2_ac').value) || 0;
+  totalAC += parseInt(document.getElementById('eq_cloak_ac').value) || 0;
+  
+  document.getElementById('total_ac').textContent = totalAC;
+  
+  // Calcular Bônus de Ataque
+  const nivel = parseInt(document.getElementById('nivel').value) || 1;
+  const profBonus = Math.ceil(nivel / 4) + 1; // Proficiency bonus
+  const str = parseInt(document.getElementById('attr_str').value) || 10;
+  const strMod = calculateModifier(str);
+  
+  // Ataque = proficiency + STR + bônus da arma
+  let totalAttack = profBonus + strMod;
+  totalAttack += parseInt(document.getElementById('eq_mainhand_atk').value) || 0;
+  
+  const attackStr = totalAttack >= 0 ? `+${totalAttack}` : String(totalAttack);
+  document.getElementById('total_attack').textContent = attackStr;
+  
+  // Dano da arma principal
+  const damage = document.getElementById('eq_mainhand_dmg').value;
+  if (damage) {
+    const damageBonus = strMod + (parseInt(document.getElementById('eq_mainhand_atk').value) || 0);
+    const damageStr = damageBonus >= 0 ? `${damage}+${damageBonus}` : `${damage}${damageBonus}`;
+    document.getElementById('total_damage').textContent = damageStr;
+  } else {
+    document.getElementById('total_damage').textContent = '-';
+  }
+  
+  saveCharacterData();
+}
+
+// Calcular AC (compatibilidade - agora chama updateEquipmentStats)
+function calculateAC() {
+  updateEquipmentStats();
+}
+
+// Exportar a ficha como JSON
+function exportCharacterSheet() {
+  // Garantir dados atualizados
+  saveCharacterData();
+  const raw = localStorage.getItem('characterSheet');
+  let sheet = null;
+  try { sheet = raw ? JSON.parse(raw) : null; } catch {}
+
+  if (!sheet) {
+    sheet = {
+      nome: document.getElementById('nome').value,
+      titulo: document.getElementById('titulo').value,
+      nivel: parseInt(document.getElementById('nivel').value) || 1,
+      lore: document.getElementById('lore').value,
+      preparedSpells: Array.from(preparedSpells),
+      image: localStorage.getItem('characterImage') || null
+    };
+  }
+
+  const blob = new Blob([JSON.stringify(sheet, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `grimorio_${sheet.nome || 'personagem'}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// Abrir seletor de arquivo para importar
+function triggerImport() {
+  const input = document.getElementById('import-json-input');
+  if (input) input.click();
+}
+
+// Importar ficha de um arquivo JSON
+function importCharacterSheet(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const sheet = JSON.parse(e.target.result);
+      // Validação simples
+      if (!sheet || typeof sheet !== 'object') throw new Error('JSON inválido');
+
+      // Persistir
+      localStorage.setItem('characterSheet', JSON.stringify(sheet));
+      if (sheet.image) localStorage.setItem('characterImage', sheet.image); else localStorage.removeItem('characterImage');
+
+      // Aplicar no UI
+      document.getElementById('nome').value = sheet.nome || '';
+      document.getElementById('titulo').value = sheet.titulo || '';
+      document.getElementById('nivel').value = (typeof sheet.nivel === 'number' ? sheet.nivel : 1);
+      document.getElementById('lore').value = sheet.lore || '';
+      preparedSpells = new Set(Array.isArray(sheet.preparedSpells) ? sheet.preparedSpells : []);
+      displayCharacterImage(sheet.image || null);
+
+      // Recalcular e salvar
+      updateSpells();
+      updateActions();
+      renderTimeline();
+      renderCampanhaTab();
+      saveCharacterData();
+    } catch(err) {
+      alert('Falha ao importar JSON: ' + err.message);
+      console.warn(err);
+    } finally {
+      // limpar input para permitir reimportar o mesmo arquivo
+      event.target.value = '';
+    }
+  };
+  reader.readAsText(file);
+}
+
+// Limpar diário e restaurar valores padrão
+function clearCharacterSheet() {
+  // Remover todas as chaves
+  localStorage.removeItem('characterSheet');
+  localStorage.removeItem('characterName');
+  localStorage.removeItem('characterTitle');
+  localStorage.removeItem('characterLevel');
+  localStorage.removeItem('characterLore');
+  localStorage.removeItem('characterPreparedSpells');
+  localStorage.removeItem('characterImage');
+
+  // Resetar estado e UI
+  preparedSpells = new Set();
+  document.getElementById('nome').value = "Vah'Lunara";
+  document.getElementById('titulo').value = 'Sentinela do Crepúsculo';
+  document.getElementById('nivel').value = 1;
+  document.getElementById('lore').value = 'Membro de Thar Selûn, o Povo da Última Luz. Guardiã nômade devota de Selûne, deusa da lua e das estrelas.';
+  displayCharacterImage(null);
+
+  updateSpells();
+  updateActions();
+  renderTimeline();
+  renderCampanhaTab();
+  saveCharacterData();
+}
+
+
+// Função para abrir o flipbook
+function openFlipbook() {
+  window.open('VahLunara/Vah-lunara-flip.html', 'flipbook', 'width=1200,height=800,resizable=yes,scrollbars=yes');
+}
+
+// Inicializar ao carregar a página
+window.onload = function() {
+  loadCharacterData();
+  updateAttributeModifiers();
+  updateSpells();
+  updateActions();
+  renderTimeline();
+  renderCampanhaTab();
+  renderImageGallery();
+  initTabs();
+};
+</script>
+</body>
+</html>

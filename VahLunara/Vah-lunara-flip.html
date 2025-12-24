@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Vah'Lunara — A Marca da Última Luz</title>
+
+  <style>
+    :root {
+      --bg: #0d0f14;
+      --panel: #141827;
+      --gold: #d4b36a;
+      --moon: #cfd8ff;
+      --text: #e8e6df;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: radial-gradient(circle at top, #1a1f2b, var(--bg));
+      color: var(--text);
+      font-family: "Georgia", serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .flipbook-container {
+      perspective: 1000px;
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    .book {
+      width: 100%;
+      height: 600px;
+      background: linear-gradient(180deg, #141827, #0b0d13);
+      border: 2px solid rgba(212,179,106,0.5);
+      box-shadow: 
+        0 20px 60px rgba(0,0,0,0.8),
+        inset 0 1px 0 rgba(212,179,106,0.2);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page-container {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+    }
+
+    .page {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      padding: 60px 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 20px;
+      backface-visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .page.active {
+      opacity: 1;
+      position: relative;
+      z-index: 10;
+    }
+
+    .page-number {
+      position: absolute;
+      bottom: 12px;
+      right: 20px;
+      font-size: 0.9em;
+      color: var(--gold);
+      opacity: 0.6;
+    }
+
+    .title {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .title h1 {
+      font-size: 3rem;
+      letter-spacing: 0.15em;
+      color: var(--gold);
+      text-shadow: 0 0 20px rgba(212,179,106,0.3);
+    }
+
+    .title span {
+      font-size: 1.2rem;
+      color: var(--moon);
+      opacity: 0.85;
+      letter-spacing: 0.08em;
+    }
+
+    .page img {
+      width: 80%;
+      height: auto;
+      max-height: 350px;
+      border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.08);
+      margin: 0 auto;
+      object-fit: cover;
+    }
+
+    .page h2 {
+      text-align: center;
+      font-size: 1.8rem;
+      letter-spacing: 0.1em;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+
+    .page p {
+      text-align: center;
+      line-height: 1.8;
+      font-size: 1.05rem;
+      color: var(--text);
+      padding: 0 12px;
+    }
+
+    .final-quote {
+      text-align: center;
+      font-style: italic;
+      font-size: 1.4rem;
+      color: var(--gold);
+      text-shadow: 0 0 15px rgba(212,179,106,0.2);
+    }
+
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 30px;
+      gap: 20px;
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, var(--gold), #c9a448);
+      color: #000;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1em;
+      font-weight: bold;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(212,179,106,0.3);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(212,179,106,0.5);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .page-info {
+      color: var(--moon);
+      font-size: 0.95em;
+      text-align: center;
+      min-width: 120px;
+    }
+
+    .progress-bar {
+      flex: 1;
+      max-width: 300px;
+      height: 4px;
+      background: rgba(212,179,106,0.2);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold), var(--moon));
+      transition: width 0.3s ease;
+      border-radius: 2px;
+    }
+
+    @media (max-width: 768px) {
+      .book {
+        height: 500px;
+      }
+      
+      .page {
+        padding: 40px 24px;
+      }
+
+      .title h1 {
+        font-size: 2rem;
+      }
+
+      .page h2 {
+        font-size: 1.4rem;
+      }
+
+      .page p {
+        font-size: 0.95rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="flipbook-container">
+    <div class="book">
+      <div class="page-container">
+        <!-- CAPA -->
+        <section class="page active title">
+          <h1>Vah'Lunara</h1>
+          <span>A Marca da Última Luz</span>
+          <span style="margin-top: 20px; opacity: 0.6; font-size: 0.9rem;">Clique em "Próxima" para começar</span>
+          <span class="page-number">Capa</span>
+        </section>
+
+        <!-- PÁGINA 1 -->
+        <section class="page">
+          <h2>O Povo da Última Luz</h2>
+          <p>
+            Vah'Lunara nasceu entre os guardiões de Thar Selûn, o Povo da Última Luz.
+            Desde a infância, aprendeu que a vigília não pertence ao indivíduo,
+            mas ao clã inteiro — passada de corpo em corpo, de gesto em gesto,
+            de lua em lua.
+          </p>
+          <p>
+            Para eles, o crepúsculo não anuncia o fim do dia,
+            mas o momento em que o mundo escuta.
+          </p>
+          <span class="page-number">1</span>
+        </section>
+
+        <!-- PÁGINA 2 -->
+        <section class="page">
+          <h2>Quando a Fé Toca a Carne</h2>
+          <p>
+            Ao atingir a maioridade, Vah'Lunara ajoelhou-se diante das Var.
+            Com agulhas consagradas à lua, a marca de Selûne foi gravada em sua palma.
+          </p>
+          <p>
+            Não como ornamento, mas como pacto.
+            A partir daquele instante, sua magia passaria a fluir
+            do próprio corpo oferecido à vigília.
+          </p>
+          <span class="page-number">2</span>
+        </section>
+
+        <!-- PÁGINA 3 -->
+        <section class="page">
+          <h2>Duas Almas</h2>
+          <p>
+            Em Thar Selûn, as Var conduzem os ritos,
+            pois nelas habita a centelha divina da lua.
+            Os Vis sustentam o clã em silêncio,
+            cuidando do lar, da caça e do bem-estar coletivo.
+          </p>
+          <p>
+            Raramente, um Vis nasce com a centelha.
+            Quando isso acontece, dizem que ele carrega duas almas.
+            Vah'Lunara honra seu irmão por isso —
+            ainda que, muitas vezes, sinta o peso da comparação.
+          </p>
+          <span class="page-number">3</span>
+        </section>
+
+        <!-- PÁGINA 4 -->
+        <section class="page">
+          <h2>A Vigília em Movimento</h2>
+          <p>
+            Com escudo erguido e a lua marcada na pele,
+            Vah'Lunara deixou a tribo para servir Selûne pelo mundo.
+            Em batalha, sua fé desperta no instante do impacto,
+            quando a noite responde ao seu chamado.
+          </p>
+          <p>
+            Ela não luta por glória,
+            mas para que os ciclos continuem.
+          </p>
+          <span class="page-number">4</span>
+        </section>
+
+        <!-- PÁGINA FINAL -->
+        <section class="page title">
+          <p class="final-quote">
+            "Quando Thar Selûn chama, o guardião retorna."
+          </p>
+          <span style="margin-top: 20px; opacity: 0.6; font-size: 0.9rem;">Fim da História</span>
+          <span class="page-number">Epílogo</span>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn" id="prevBtn" onclick="prevPage()">← Anterior</button>
+    
+    <div style="display: flex; align-items: center; gap: 12px; flex: 1; justify-content: center;">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <span class="page-info"><span id="currentPage">1</span>/<span id="totalPages">6</span></span>
+    </div>
+
+    <button class="btn" id="nextBtn" onclick="nextPage()">Próxima →</button>
+  </div>
+
+  <script>
+    let currentPage = 0;
+    const pages = document.querySelectorAll('.page');
+    const totalPages = pages.length;
+
+    function updatePage() {
+      // Atualizar visibilidade das páginas
+      pages.forEach((page, index) => {
+        page.classList.remove('active');
+        if (index === currentPage) {
+          page.classList.add('active');
+        }
+      });
+
+      // Atualizar botões
+      document.getElementById('prevBtn').disabled = currentPage === 0;
+      document.getElementById('nextBtn').disabled = currentPage === totalPages - 1;
+
+      // Atualizar indicador de página
+      document.getElementById('currentPage').textContent = currentPage + 1;
+
+      // Atualizar barra de progresso
+      const progress = ((currentPage + 1) / totalPages) * 100;
+      document.getElementById('progressFill').style.width = progress + '%';
+    }
+
+    function nextPage() {
+      if (currentPage < totalPages - 1) {
+        currentPage++;
+        updatePage();
+      }
+    }
+
+    function prevPage() {
+      if (currentPage > 0) {
+        currentPage--;
+        updatePage();
+      }
+    }
+
+    // Navegação com teclado
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') {
+        e.preventDefault();
+        nextPage();
+      }
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        prevPage();
+      }
+    });
+
+    // Inicializar
+    updatePage();
+  </script>
+</body>
+</html>
